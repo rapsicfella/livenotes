@@ -1,0 +1,35 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: ota
+spec:
+  host: ota
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+  
+---
+
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: vs
+spec:
+  host: vs
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+
+---
+
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: od
+spec:
+  host: od
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+
+

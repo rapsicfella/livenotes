@@ -1,0 +1,61 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: sdv-egress-gateway
+spec:
+  selector:
+    istio: egressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+     
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: dds-destinationrule
+spec:
+  host: istio-egressgateway.istio-system.svc.cluster.local
+  subsets:
+  - name: ddsexternal
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: dds-virtualservice
+spec:
+  hosts:
+  - dds.k3s.external
+  gateways:
+  - sdv-egress-gateway
+  - mesh
+  http:
+  - match:
+    - gateways:
+      - mesh
+      port: 5020
+    route:
+    - destination:
+        host: istio-egressgateway.istio-system.svc.cluster.local
+        subset: ddsexternal
+        port:
+          number: 80
+      weight: 100
+  - match:
+    - gateways:
+      - sdv-egress-gateway
+      port: 80
+    - uri:
+        exact: /videoStreaming/camFeed
+    - uri:
+        exact: /objectDetection/camFeed
+    route:
+    - destination:
+        host: dds.k3s.external
+        port:
+          number: 5020
+      weight: 100

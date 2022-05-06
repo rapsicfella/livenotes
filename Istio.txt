@@ -1,0 +1,394 @@
+kubectl get pod -n getting-started | grep Evicted| xargs kubectl delete pod -n getting-started
+prom - 3119
+Install Istio:
+
+export PATH=$PATH:$HOME/.istioctl/bin
+
+Uninstall istio - istioctl x uninstall --purge
+
+curl -L https://istio.io/downloadIstio | sh -
+cd istio-1.12.1
+export PATH=$PWD/bin:$PATH
+istioctl install --set profile=demo -y
+kubectl label namespace default istio-injection=enabled
+
+istioctl install --set profile=demo -y --set components.egressGateways[0].name=istio-egressgateway --set components.egressGateways[0].enabled=true  --set meshConfig.outboundTrafficPolicy.mode=REGISTRY_ONLY
+
+kubectl apply -f ~/istio-1.12.0/samples/addons
+kubectl rollout status deployment/kiali -n istio-system
+
+
+
+Istio
+
+Enable httpbin 
+---https://istio.io/latest/docs/tasks/traffic-management/ingress/ingress-control/#determining-the-ingress-ip-and-ports
+
+
+http://192.168.1.8:31810/hello
+
+kubectl apply -f helloworld-gateway.yaml
+
+kubectl get hpa
+
+export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
+
+kubectl autoscale deployment helloworld-v1 --cpu-percent=50 --min=1 --max=10
+kubectl autoscale deployment helloworld-v2 --cpu-percent=50 --min=1 --max=10
+
+kubectl delete hpa helloworld-v1 helloworld-v2
+kubectl delete gateway
+
+Enable ingress gateways - https://istio.io/latest/docs/tasks/traffic-management/ingress/ingress-control/#determining-the-ingress-ip-and-ports
+
+istioctl command not found -   curl -sL https://istio.io/downloadIstioctl | sh -
+                               export PATH=$PATH:$HOME/.istioctl/bin
+
+Patch the master node - kubectl patch node harsha -p "{\"spec\":{\"unschedulable\":false}}"
+========================================================================================
+Demo:
+
+deploy service
+kubectl apply -f helloworld.yaml -l service=helloworld
+
+deploy 1st version of app:
+kubectl apply -f helloworld.yaml -l version=v1
+
+Try:
+curl http://$GATEWAY_URL/hello 
+
+Enable service gateway:
+kubectl apply -f helloworld-gateway.yaml
+
+Deploy 2nd version of app:
+kubectl apply -f helloworld.yaml -l version=v2
+
+Enable autoscaling on both versions of the service:
+kubectl autoscale deployment helloworld-v1 --cpu-percent=50 --min=1 --max=10
+kubectl autoscale deployment helloworld-v2 --cpu-percent=50 --min=1 --max=10
+
+To Enable gateway URL, ie, To enable ingress host and ports:
+        export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
+        export SECURE_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
+        export TCP_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="tcp")].nodePort}')
+        export INGRESS_HOST=$(kubectl get po -l istio=ingressgateway -n istio-system -o jsonpath='{.items[0].status.hostIP}')
+        export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
+
+        http://192.168.1.9:31973/videoStreaming/cameraRequest
+
+
+CleanUp:
+kubectl delete -f helloworld.yaml
+kubectl delete -f helloworld-gateway.yaml
+kubectl delete hpa helloworld-v1 helloworld-v2
+
+Browser URL:
+http://192.168.1.8:31810/productpage
+
+Kiali Dashboard:
+istioctl dashboard kiali
+
+Request Routing for BookInfo: https://istio.io/latest/docs/tasks/traffic-management/request-routing/
+
+
+ingress gateway error:
+
+kubectl get svc -n kube-system
+kubectl -n kube-sytem delete svc traefik 
+
+BOOKINFO:
+Default Destination rules:
+kubectl apply -f samples/bookinfo/networking/destination-rule-all.yaml
+
+Request Routing for v1 and Name-specific:
+https://istio.io/latest/docs/tasks/traffic-management/request-routing/
+
+Random Requests:
+for i in $(seq 1 100); do curl -s -o /dev/null "http://$GATEWAY_URL/productpage"; done
+
+Get virtual services:
+kubectl get virtualservices -o yaml
+
+
+upstream error:
+ku delete pods --all -n istio-system
+
+
+kubectl logs -l istio=egressgateway -c istio-proxy -n istio-system | tail
+istioctl proxy-config cluster -n istio-system istio-ingressgateway-7d6874b48f-qxhn5
+
+
+In dds_gateway.py:
+
+If using docker run:
+
+     line 28 -   self.VS_UI_EVENT_API_ENDPOINT = 'http://192.168.1.9:5001/videoStreaming/cameraRequest'
+     line 53 -   self.OD_UI_EVENT_API_ENDPOINT = 'http://192.168.1.9:5002/objectDetection/cameraRequest'
+     line 76 -   self.OTA_UI_EVENT_API_ENDPOINT = 'http://192.168.1.9:5003/ota/otaRequest'
+
+If using istio ingress gateway:
+     
+     line 28 -   self.VS_UI_EVENT_API_ENDPOINT = 'http://$GATEWAY_URL/videoStreaming/cameraRequest'
+     line 53 -   self.OD_UI_EVENT_API_ENDPOINT = 'http://$GATEWAY_URL/objectDetection/cameraRequest'
+     line 76 -   self.OTA_UI_EVENT_API_ENDPOINT = 'http://$GATEWAY_URL/ota/otaRequest'
+
+
+Note: 1. here 192.168.1.9 is the host system IPV4(keep yours).
+      2. dds gateway is running on 5020 port of your host system.
+
+        Confirmation:
+                 #check if k3s sucessfully installed:
+                 Go to terminal and type -  kubectl get node
+                 Output:
+                    harsha@harsha-workpool:~$ kubectl get node
+                    NAME              STATUS   ROLES                  AGE   VERSION
+                    harsha-workpool   Ready    control-plane,master   34d   v1.21.5+k3s2
+                    
+                 #check for private docker registry:
+                 Go to terminal and type -  kubectl get svc -n kube-system
+                 Output:
+                    harsha@harsha-workpool:~$ kubectl get svc -n kube-system
+                    NAME             TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)                  AGE
+                    kube-dns         ClusterIP      10.43.0.10      <none>        53/UDP,53/TCP,9153/TCP   34d
+                    metrics-server   ClusterIP      10.43.165.109   <none>        443/TCP                  34d
+                    kube-registry    LoadBalancer   10.43.84.44     192.168.1.9   5000:32403/TCP           30d
+
+
+
+Egress site ; https://istio.io/v1.0/docs/examples/advanced-egress/egress-gateway/
+
+
+cleanup:
+
+ku delete -f vs-deployment.yaml
+ku delete -f od-deployment.yaml
+ku delete -f ota-deployment.yaml 
+ku delete -f sdv-gateway.yaml 
+ku delete -f ServiceEntry.yaml 
+ku delete -f Egressgateway.yaml
+
+
+
+ku apply -f vs-deployment.yaml
+ku apply -f od-deployment.yaml
+ku apply -f ota-deployment.yaml 
+ku apply -f sdv-gateway.yaml 
+ku apply -f ServiceEntry.yaml 
+ku apply -f Egressgateway.yaml
+
+
+
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: dds-svc
+spec:
+  hosts:
+  - sdv-dds-gateway4.com
+  addresses:
+  - 192.168.1.9/32
+  ports:
+  - number: 5020
+    name: http
+    protocol: HTTP
+  location: MESH_EXTERNAL
+  resolution: STATIC
+  endpoints:
+  - address: 192.168.1.9
+
+
+  apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: istio-egressgateway
+spec:
+  selector:
+    istio: egressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - sdv-dds-gateways.com
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: dds-destinationrule
+spec:
+  host: istio-egressgateway.istio-system.svc.cluster.local
+  subsets:
+  - name: dds-service
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: dds-virtualservice
+spec:
+  hosts:
+  - sdv-dds-gateways.com
+  gateways:
+  - mesh
+  - istio-egressgateway
+  http:
+  - match:
+    - gateways:
+      - mesh
+      port: 80
+    route:
+    - destination:
+        host: istio-egressgateway.istio-system.svc.cluster.local
+        subset: dds-service
+        port:
+          number: 80
+      weight: 100
+  - match:
+    - gateways:
+      - istio-egressgateway
+      port: 80
+    route:
+    - destination:
+        host: sdv-dds-gateways.com
+        #port:
+          #number: 31973
+      weight: 100
+
+
+
+
+
+ Working:
+ 
+    apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: istio-egressgateway
+spec:
+  selector:
+    istio: egressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - dds-gateway.k3s.externl 
+    tls:
+      mode: PASSTHROUGH
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: dds-destinationrule
+spec:
+  host: istio-egressgateway.istio-system.svc.cluster.local
+  subsets:
+  - name: dds-svc
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: dds-virtualservice
+spec:
+  hosts:
+  - dds-gateway.k3s.externl
+  gateways:
+  - mesh
+  - istio-egressgateway
+  http:
+  - match:
+    - gateways:
+      - mesh
+      port: 80
+    route:
+    - destination:
+        host: istio-egressgateway.istio-system.svc.cluster.local
+        subset: dds-svc
+        port:
+          number: 5020
+      weight: 100
+  - match:
+    - gateways:
+      - istio-egressgateway
+      port: 5020
+    route:
+    - destination:
+        host: dds-gateway.k3s.externl
+        port:
+          number: 5020
+      weight: 100
+
+
+
+
+
+      Error egress:
+
+      apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: istio-egressgateway
+spec:
+  selector:
+    istio: egressgateway
+  servers:
+  - port:
+      number: 5020
+      name: http
+      protocol: HTTP
+    hosts:
+    - dds-gateway.k3s.externl
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: egressgateway-for-dds
+spec:
+  host: istio-egressgateway.istio-system.svc.cluster.local
+  subsets:
+  - name: dds
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: dds
+spec:
+  host: dds-gateway.k3s.externl
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: direct-dds-through-egress-gateway
+spec:
+  hosts:
+  - dds-gateway.k3s.externl
+  gateways:
+  - mesh
+  - istio-egressgateway
+  http:
+  - match:
+    - gateways:
+      - mesh
+      #destinationSubnets:
+      #- 192.168.1.9/32
+      port: 5020
+    route:
+    - destination:
+        host: istio-egressgateway.istio-system.svc.cluster.local
+        subset: dds
+        port:
+          number: 80
+      weight: 100
+  - match:
+    - gateways:
+      - istio-egressgateway
+      port: 80
+    - uri:
+        exact: /videoStreaming/camFeed
+    route:
+    - destination:
+        host: dds-gateway.k3s.externl
+        port:
+          number: 5020
+      weight: 100

@@ -1,0 +1,90 @@
+Tasks
+
+### Traffic Management
+
+    Request Routing
+    Fault Injection
+    Traffic Shifting
+    TCP Traffic Shifting
+    Request Timeouts
+    Circuit Breaking
+    Mirroring
+
+# Locality Load Balancing
+
+    Before you begin
+    Locality failover
+    Locality weighted distribution
+    Cleanup
+
+# Ingress
+
+    Ingress Gateways
+    Secure Gateways
+    Ingress Gateway without TLS Termination
+    Kubernetes Ingress
+    Kubernetes Gateway API
+
+# Egress
+        Accessing External Services
+        Egress TLS Origination
+        Egress Gateways
+        Egress Gateways with TLS Origination
+        Egress using Wildcard Hosts
+        Kubernetes Services for Egress Traffic
+        Using an External HTTPS Proxy
+
+### Security
+
+1. Certificate Management
+
+    Plug in CA Certificates
+    Istio DNS Certificate Management
+    Custom CA Integration using Kubernetes CSR *
+
+2. Authentication
+
+    Authentication Policy
+    JWT claim based routing *
+    Mutual TLS Migration
+
+3. Authorization
+        HTTP Traffic
+        TCP Traffic
+        JWT Token
+        External Authorization
+        Explicit Deny
+        Ingress Gateway
+        Trust Domain Migration
+        Dry Run *
+
+### Policy Enforcement
+
+1.  Enabling Rate Limits using Envoy
+
+### Observability
+
+    Telemetry API
+
+1. Metrics
+
+    Collecting Metrics for TCP Services
+    Customizing Istio Metrics
+    Classifying Metrics Based on Request or Response
+    Querying Metrics from Prometheus
+    Visualizing Metrics with Grafana
+
+2. Logs
+
+    Envoy Access Logs
+
+3. Distributed Tracing
+
+    Overview
+    Jaeger
+    Zipkin
+    Configure tracing using MeshConfig and Pod annotations *
+    Lightstep
+
+4. Visualizing Your Mesh
+5. Remotely Accessing Telemetry Addons

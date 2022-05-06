@@ -1,0 +1,52 @@
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: od
+  labels:
+    app: od
+    service: od
+spec:
+  ports:
+  - port: 5002
+    name: http
+  selector:
+    app: od
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: od
+  labels:
+    app: od
+    #version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: od
+      #version: v1
+  template:
+    metadata:
+      labels:
+        app: od
+        #version: v1
+    spec:
+      containers:
+      - name: od
+        image: localhost:5000/od-ms:latest
+        envFrom:
+          - configMapRef:
+              name: ip-config
+        #imagePullPolicy: IfNotPresent #Always
+        resources:
+          requests:
+            memory: "1Gi"
+            #cpu: "50m"
+          limits:
+            memory: "1Gi" 
+            #cpu: "60m"
+        ports:
+        - containerPort: 5002
+      priorityClassName: mid-priority
+

@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: vs
+  labels:
+    app: vs
+    service: vs
+spec:
+  ports:
+    - port: 5001
+      name: http
+  selector:
+    app: vs
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vs
+  labels:
+    app: vs
+    #version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vs
+      #version: v1
+  template:
+    metadata:
+      labels:
+        app: vs
+        #version: v1  
+    spec:
+      containers:
+        - name: vs
+          image: localhost:5000/vs-ms:latest
+          envFrom:
+          - configMapRef:
+              name: ip-config
+          #imagePullPolicy: IfNotPresent #Always
+          ports:
+            - containerPort: 5001
+      priorityClassName: high-priority
+      #tolerations:
+      #- key: "node.kubernetes.io/memory-pressure"
+      #operator: "Equal"
+      #value: "4Gi"
+      #effect: "NoExecute"
+      #tolerationSeconds: 60

@@ -1,0 +1,18 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: ddsexternal
+spec:
+  hosts:
+  - dds.k3s.external
+  addresses:
+  - 192.168.1.11
+  ports:
+  - number: 5020
+    name: http
+    protocol: HTTP
+  location: MESH_EXTERNAL
+  resolution: STATIC
+  endpoints:
+  - address: 192.168.1.11
+  exportTo: ["."]

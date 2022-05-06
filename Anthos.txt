@@ -1,0 +1,217 @@
+Anthos
+The edgeEngine Runtime provides all the capabilities required to run a RESTful microservice. By default the edgeEngine Runtime installs an HTTP web server automatically. All microservice endpoints running on the node have access to the HTTP web server as a shared resource.
+
+
+
+
+curl -i \
+    -H "Accept: application/json" \
+    -X POST -d "action_id":"30","params":"Tip 3","data":"Target 3","configurationGroup":null,"name":"Configuration Deneme 3","description":null,"identity":"Configuration Deneme 3","version":0,"systemId":3,"active":true \
+    http://localhost:5011/videoStreaming/cameraRequest
+
+
+
+
+    curl -i \
+    -H "Accept: application/json" \
+    -X POST -d '{"action_id":"30","params":"Tip 3","data":"Target 3"}'\
+    http://localhost:5011/videoStreaming/cameraRequest
+
+
+    var_params = ui_event.params
+        var_action_id = ui_event.action_id
+        var_data = ui_event.data
+
+
+data = {'action_id': 1, 'params': "hello", 'data': '1'}
+
+r = requests.post(url=http://localhost:5001/videoStreaming/cameraRequest,data=json.dumps(data),headers={'Content-type': 'application/json'})
+print(r.text)
+
+
+------------------------------------------------------------------------------------------------------
+Manual load balancing
+
+
+Secure your inter-service traffic: Anthos Service Mesh certificate authority (Mesh CA) automatically generates and rotates certificates so you can enable mutual TLS authentication (mTLS) easily with Istio policies.
+
+The Anthos cluster management view provides a secure console to view the state of all your registered clusters and create new clusters for your project. 
+
+Using an adapter, Anthos Service Mesh collects and aggregates data about each service request and response, which means that service developers don't have to instrument their code to collect telemetry data or manually set up dashboards and charts. 
+
+Anthos Service Mesh automatically uploads metrics and logs to Cloud Monitoring and Cloud Logging for all traffic within your cluster. This detailed telemetry enables operators to observe service behavior, and empowers them to troubleshoot, maintain, and optimize their applications.  
+
+Note: Currently, the Service Mesh dashboard is supported only for Anthos on Google Cloud clusters, and can't connect to clusters outside of Google Cloud.
+
+Improved etcd reliability
+To monitor the size and defragment etcd databases, Anthos clusters on bare metal control planes include an etcddefrag pod to reclaim storage from large etcd databases and recover etcd when disk space is exceeded.
+
+we can connect our cluster on bare metal to gcp anthos later by creating some kind of service accounts.
+
+https://youtu.be/RE0A3kHT3LA
+
+
+
+
+
+ssh-copy-id -i ~/.ssh/id_rsa.pub root@192.168.1.9
+
+./bmctl create config -c standalone25 --enable-apis --create-service-accounts --project-id=$PROJECT_ID
+
+
+bmctl create config -c bm-cluster-demo –enable-apis –create-service-accounts –project-id=$PROJECT_ID
+
+
+bmctl create config -c cluster1 \
+  --enable-apis --create-service-accounts --project-id=$PROJECT_ID
+
+======================================================================================================================
+
+  gcloud config set project PROJECT_ID
+
+  gcloud projects list
+  gcloud services list
+
+
+  gcloud services enable \
+>    --project=$PROJECT_ID \
+>    container.googleapis.com \
+>    gkeconnect.googleapis.com \
+>    gkehub.googleapis.com \
+>    cloudresourcemanager.googleapis.com \
+>    iam.googleapis.com
+
+
+gcloud projects get-iam-policy $PROJECT_ID
+
+gcloud iam service-accounts list --project=$PROJECT_ID
+
+
+
+FLEET_HOST_PROJECT_ID=$PROJECT_ID
+gcloud projects add-iam-policy-binding ${FLEET_HOST_PROJECT_ID} \
+   --member="serviceAccount:mynewproject-sa@${FLEET_HOST_PROJECT_ID}.iam.gserviceaccount.com" \
+   --role="roles/gkehub.connect"
+
+
+FLEET_HOST_PROJECT_ID=$PROJECT_ID
+gcloud iam service-accounts keys create /home/harsha/.ssh/sa-privatekey.JSON \
+   --iam-account=mynewproject-sa@${FLEET_HOST_PROJECT_ID}.iam.gserviceaccount.com \
+   --project=${FLEET_HOST_PROJECT_ID}
+
+
+ gcloud container hub memberships register k3s-cluster \
+   --context=default \
+   --kubeconfig=/etc/rancher/k3s/k3s.yaml \
+   --service-account-key-file=/home/harsha/.ssh/sa-privatekey.JSON
+
+
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+   --member user:natrajan.v.vittal@gmail.com \
+   --role='roles/gkehub.viewer' \
+   --role='roles/container.viewer'
+
+
+   cat <<EOF > cloud-console-reader.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: cloud-console-reader
+rules:
+- apiGroups: [""]
+  resources: ["nodes", "persistentvolumes", "pods"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["storage.k8s.io"]
+  resources: ["storageclasses"]
+  verbs: ["get", "list", "watch"]
+EOF
+kubectl apply -f cloud-console-reader.yaml
+
+
+KSA_NAME=ksa-name
+kubectl create serviceaccount ${KSA_NAME}
+kubectl create clusterrolebinding view-binding-name \
+--clusterrole view --serviceaccount default:${KSA_NAME}
+kubectl create clusterrolebinding cloud-console-reader-binding-name \
+--clusterrole cloud-console-reader --serviceaccount default:${KSA_NAME}
+
+kubectl create clusterrolebinding binding-name \
+--clusterrole cluster-admin --serviceaccount default:ksa-name
+
+harsha@harsha-workpool:~$ SECRET_NAME=$(kubectl get serviceaccount ksa-name -o jsonpath='{$.secrets[0].name}')
+harsha@harsha-workpool:~$ kubectl get secret ${SECRET_NAME} -o jsonpath='{$.data.token}' | base64 --decode
+eyJhbGciOiJSUzI1NiIsImtpZCI6IlAxeWVzNzBmSmlxT1BYRnFXTURjNVVFTjV4bUpqZl9PYWVKclZYQ0wxcjAifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImtzYS1uYW1lLXRva2VuLWRtOW1uIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQubmFtZSI6ImtzYS1uYW1lIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQudWlkIjoiMjMwZGFmYTctOWVhMC00NDM4LTg4YWItZDU1YzU2ZmQyNjRiIiwic3ViIjoic3lzdGVtOnNlcnZpY2VhY2NvdW50OmRlZmF1bHQ6a3NhLW5hbWUifQ.rdKdz3P20fLyU3DYMS134fyqpKSQ4HxNxwlRxYBO6zwwyjggZ2lfhPI_XpBb36P7HFPcL4sJnWhB81sXJhieOieCkbJ7WdUmPcglScFjs3XJ7obrdmoWUpi1oU2VnxEBcPQ4qRcrDIE-WHZBantU_z1szTRJ0am0XU9WPfzlFATk9W0Z7TiCMuI7Y2BaYm7G29TMgM_Ex5k00g1FtTQZIn1z70HwOu7UaiJBqlCnaOpDzUDe6GtMxK-L1J3QMSAqJACSdPaZqOhZ3k9a-kSPn53YUpYqaMSxaXXZEwSc-d09xi_dMB_DVpCUl9GYuiheKxf7rXuKyNsajna6y8de7g
+
+
+
+
+[13/04 19:11] Bala Venkata Sri Harsha Mullapudi (iDEAS-ER&D)
+
+
+[13/04 19:21] Shreekant Dashora (iDEAS-ER&D)
+type kubectl get pod 
+
+[13/04 19:11] Bala Venkata Sri Harsha Mullapudi (iDEAS-ER&D)
+
+
+[13/04 19:21] Shreekant Dashora (iDEAS-ER&D)
+type kubectl get pod 
+
+[13/04 19:11] Bala Venkata Sri Harsha Mullapudi (iDEAS-ER&D)
+
+
+[13/04 19:21] Shreekant Dashora (iDEAS-ER&D)
+type kubectl get pod 
+
+natrajan_v_vittal@bm-wkst:~/baremetal$ bmctl create cluster -c standalone1
+Please check the logs at bmctl-workspace/standalone1/log/create-cluster-20220413-124904/create-cluster.log
+[2022-04-13 12:49:14+0000] Creating bootstrap cluster... OK
+[2022-04-13 12:50:28+0000] Installing dependency components... OK
+create kind cluster failed: error applying resources: action failed after 10 attempts: pod "cert-manager-96d7b5768-xfsz9" is not ready
+[2022-04-13 13:41:02+0000] Deleting bootstrap cluster... OK
+[2022-04-13 13:41:04+0000] Error creating cluster: create kind cluster failed: error applying resources: action failed after 10 attempts: pod "cert-manager-96d7b5768-xfsz9" is not ready
+Error: create kind cluster failed: error applying resources: action failed after 10 attempts: pod "cert-manager-96d7b5768-xfsz9" is not ready
+Usage:
+  bmctl create cluster [flags]
+Flags:
+      --bootstrap-cluster-pod-cidr string       Bootstrap cluster pod CIDR (default "192.168.122.0/24")
+      --bootstrap-cluster-service-cidr string   Bootstrap cluster service CIDR (default "10.96.0.0/27")
+  -c, --cluster cluster name                    Cluster name, cluster config is expected to be placed under bmctl-workspace/<cluster name>/<cluster name>.yaml (default )
+      --force                                   If true, ignore errors from preflight checks except for GCP check errors.
+  -h, --help                                    help for cluster
+      --ignore-validation-errors                A validation error override, allowing to proceed despite the validation errors.
+      --kubeconfig string                       The path to the kubeconfig file for the admin cluster
+      --reuse-bootstrap-cluster                 If true, use existing bootstrap cluster.
+Global Flags:
+      --stderrthreshold severity   logs at or above this threshold go to stderr (default 3, possible values 0 to 3, corresponding to severity levels INFO, WARNING, ERROR, and FATAL)
+  -v, --v Level                    number for the log level verbosity (default 1, possible values 0 to 5 (though there is no strict max), increase value to see more verbose logs)
+F0413 13:41:04.153616   41546 root.go:26]
+
+
+
+gcloud services enable --project $PROJECT_ID \
+    anthos.googleapis.com \
+    anthosaudit.googleapis.com \
+    anthosgke.googleapis.com \
+    cloudresourcemanager.googleapis.com \
+    gkeconnect.googleapis.com \
+    gkehub.googleapis.com \
+    serviceusage.googleapis.com \
+    stackdriver.googleapis.com \
+    monitoring.googleapis.com \
+    logging.googleapis.com \
+    storage.googleapis.com \
+    opsconfigmonitoring.googleapis.com \
+    container.googleapis.com \
+    servicemanagement.googleapis.com \
+    servicecontrol.googleapis.com
+
+
+    gcloud iam service-accounts keys create gcr.json \
+    --iam-account=baremetal-manual@$PROJECT_ID.iam.gserviceaccount.com \
+    --project=$PROJECT_ID
+
+    ./bmctl create config -c standalone26
+
+  --enable-apis --create-service-accounts --project-id=$PROJECT_ID

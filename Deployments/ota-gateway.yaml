@@ -1,0 +1,53 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: sdv-gateway
+spec:
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: ota
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - sdv-gateway
+  http:
+  - match:
+    - uri:
+        exact: /ota
+    route:
+    - destination:
+        host: ota
+        port:
+          number: 5001
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: vs
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - sdv-gateway
+  http:
+  - match:
+    - uri:
+        exact: /vs
+    route:
+    - destination:
+        host: vs
+        port:
+          number: 5001

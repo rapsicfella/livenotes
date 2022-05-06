@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ota
+  labels:
+    app: ota
+    service: ota
+spec:
+  ports:
+  - port: 5003
+    name: http
+  selector:
+    app: ota
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ota
+  labels:
+    app: ota
+    #version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ota
+      #version: v1
+  template:
+    metadata:
+      labels:
+        app: ota
+        #version: v1
+    spec:
+      volumes:
+      - name: volume
+        hostPath:
+          path: /home/harsha/Desktop/sdv-ms/IVI_UI/nativeUI
+      containers:
+      - name: ota
+        image: localhost:5000/ota-ms:latest
+        
+        #imagePullPolicy: IfNotPresent #Always
+        volumeMounts:
+        - name: volume
+          mountPath: /opt/ota/OTA_code/nativeUI
+        ports:
+        - containerPort: 5003
+      priorityClassName: low-priority
+

@@ -1,0 +1,39 @@
+ apiVersion: security.istio.io/v1beta1
+ kind: AuthorizationPolicy
+ metadata:
+   name: ingress-policy
+   namespace: istio-system
+   labels:
+    policy: value-matching
+ spec:
+   selector:
+     matchLabels:
+       app: istio-ingressgateway
+   action: DENY 
+   rules:
+   - when:
+      - key: request.headers[User-Agent]
+        values: ["curl/*"]
+
+---
+
+ apiVersion: security.istio.io/v1beta1
+ kind: AuthorizationPolicy
+ metadata:
+   name: ingress-policy1
+   namespace: istio-system
+   labels:
+    policy: exclusion-matching
+ spec:
+   selector:
+     matchLabels:
+       app: istio-ingressgateway
+   action: DENY
+   rules:
+   - to:
+     - operation:
+        paths: ["/videoStreaming/cameraRequest"]
+     from:
+     - source:
+        notRequestPrincipals: ["*"]
+

@@ -1,0 +1,122 @@
+
+How to install istion on Jetson ( https://github.com/istio/istio/issues/21094 - see comment by jxlwqq on  Nov 1, 2021) :-----------
+
+On terminal 1 -
+***************
+
+curl -sL https://istio.io/downloadIstioctl | sh -
+cd istio follder
+export PATH=$PATH:$HOME/.istioctl/bin
+istioctl proxy-status
+istioctl operator init --hub=docker.io/querycapistio --tag=1.9.2
+kubectl create ns istio-system
+
+kubectl apply -f - <<EOF
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  namespace: istio-system
+  name: example-istiocontrolplane
+spec:
+  hub: docker.io/querycapistio
+  profile: demo
+EOF
+
+istioctl install --set hub=docker.io/querycapistio --set profile=demo -y
+
+while above is running, on another terminal 2 apply folowing patch -
+********************************************************************
+kubectl patch deployments.apps \
+  istio-ingressgateway \
+  --namespace istio-system \
+  --type='json' \
+  -p='[
+  {"op": "replace", "path": "/spec/template/spec/affinity/nodeAffinity/preferredDuringSchedulingIgnoredDuringExecution/0/preference/matchExpressions/0/values", "value": [amd64,arm64]},
+  {"op": "replace", "path": "/spec/template/spec/affinity/nodeAffinity/requiredDuringSchedulingIgnoredDuringExecution/nodeSelectorTerms/0/matchExpressions/0/values", "value": [amd64,arm64,ppc64le,s390x]}
+  ]'
+    
+  kubectl patch deployments.apps \
+    istio-egressgateway \
+    --namespace istio-system \
+    --type='json' \
+    -p='[
+    {"op": "replace", "path": "/spec/template/spec/affinity/nodeAffinity/preferredDuringSchedulingIgnoredDuringExecution/0/preference/matchExpressions/0/values", "value": [amd64,arm64]},
+    {"op": "replace", "path": "/spec/template/spec/affinity/nodeAffinity/requiredDuringSchedulingIgnoredDuringExecution/nodeSelectorTerms/0/matchExpressions/0/values", "value": [amd64,arm64,ppc64le,s390x]}
+    ]'
+  
+On terminal 1 - istioctl install --set hub=docker.io/querycapistio --set profile=demo -y would complete successfully
+***************
+✔ Istio core installed
+✔ Istiod installed
+✔ Ingress gateways installed
+✔ Egress gateways installed
+✔ Installation complete
+
+
+Check istio installation -
+
+kubectl -n istio-system get deploy
+istioctl profile list
+
+
+kubectl label namespace default istio-injection=enabled
+====================================================================================================================================================================================
+Other Dependencies:
+-------------------
+      JetPack 4.6 (L4T R32.6.1)
+    Downgrade to Docker version 19.03.6:
+      sudo apt clean
+      sudo apt autoremove
+    
+      -uninstall existing version of docker
+        sudo apt-get remove docker docker-engine docker.io containerd runc
+
+      sudo apt-get install nvidia-docker2
+      sudo apt install containerd=1.5.2-0ubuntu1~18.04.3
+      sudo dpkg -i docker.io_19.03.6-0ubuntu1~18.04.3_arm64.deb    (download  .deb file of Docker 19 version from   )
+      sudo apt -f install
+      sudo apt install nvidia-docker2
+
+      sudo apt-mark hold docker.io containerd
+===============================================================================================
+kubectl label namespace kube-system istio-injection=enabled
+
+kubectl apply -f <(istioctl kube-inject -f dep-vs.yaml)
+
+
+
+
+
+So there's is a conflict to apply istio service mesh to our current applications 
+
+For istio, To defend against man-in-the-middle attacks or To provide flexible service access control, there must be a known medium of communication b/w application inside pod and the client which is acessing it. with some endpoints for both of them.
+
+For example, istio uses the gateway to route traffic or balance load or provide security to pods running inside kubernetes cluster. Now 
+
+There should be a valid communication pathway b/w our application inside pod and outside UI
+
+So Grafana, As the name suggests this is the graphical representation of data. This tool helps us study, analyse & monitor data over a period of time, technically called time series analytics. It helps us track the user behaviour, application behaviour, frequency of errors popping up in production.
+
+Jaeger is open source software and it is an end-to-end distributed tracing tool used to track user requests across services in microservice architecture. We can troubleshoot things like performance and we can work on latency optimization, root cause analysis, service dependency analysis.
+
+On the other hand, Prometheus is a time-series metrics monitoring tool used to track metrics like resource usage. metrics information is stored with the timestamp at which it was recorded, alongside optional key-value pairs called labels.
+--Reliable, stand alone AND SELF containing, Works even if other parts of infrastructure is broke, and less complex. Can be deployed easity in container environents.
+
+Kiali is an observability console for Istio with service mesh configuration and validation capabilities. It helps you understand the structure and health of your service mesh by monitoring traffic flow.
+
+
+
+$ cat <<EOF > cluster2.yaml
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  values:
+    global:
+      meshID: mesh2
+      multiCluster:
+        clusterName: cluster2
+      network: network2
+EOF
+
+
+istioctl install --context="${CTX_CLUSTER2}" -f cluster2.yaml

@@ -1,0 +1,216 @@
+git token -      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
+Jenkins password:
+c2401ef9eba545008f8f95c9d663dec2
+
+sblk
+df -h
+du -sh * (In current folder)
+!<history index> to retype a command in history
+
+docker run -it -v --name integration /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY vsonpy
+
+5000 - VS
+5002 - OTA , pub 6002, sub 6003
+
+docker load -i nginx-amd.tar
+kubectl label nodes <your-node-name> disktype=ssd
+kubectl get nodes --show-labels
+docker save nginx:alpine > nginx-amd.tar
+
+5003 - OD
+
+-g /media/wiprosdv/3337-6439
+
+sudo rsync -aqxP /var/lib/docker/ /media/wiprosdv/3337-6439
+Team viewer details
+
+ID: 253137422
+
+PWD: ff9g566v
+dELL - wipod@123, 100, 30794
+fUJITSU - wipod@321, 103, 31256
+701 281 362 - natarajan
+451 843 993 - wipro@321
+
+ssh nvidia@192.168.0.104 - Wipro123
+
+
+	http blog
+	https://medium.com/from-the-scratch/http-server-what-do-you-need-to-know-to-build-a-simple-http-server-from-scratch-d1ef8945e4fa
+
+docker run -it --rm -p 5001:5001 -p 19001:19001 -p 19002:19002 -p 19003:19003 --name vs_cont vs-qcar:latest bash
+===========================================================================================================================================================================================================ISTIO:
+
+1. Istio can run alongside with the kubernetes cluster and help you manage your microservices.
+
+2. Istio, by default blocks all traffic going out of your cluster. It is good for security reasons. ie, you dont want your app talking to random end points on the internet. Istio will be able to         lockdown and only talk to trusted endpoints using egress rules(few lines of YAML).
+
+3. Istio will autmaticatically retry the requests as many times as we want before giving up - Istio will transparantly do manage all these network calls automatically.
+
+4. USE - istioctl (like kubectl).
+
+5. K8s will defaultly use round robin load balancing for its services(ie, it'll bindly send traffic to its pods). *with Istio we can exatly make traffic go where we want(ie,A specific version for specific pod).
+
+6. Istio will be able to create a full picture of our services (ie, which is talking to which like that). We can also get metrics(ie,volume, latency ) from cluster as well which will be shown on dashboard to understand what is going on on our services.
+
+7. We can use something like zipkin or jaeger to do tracing (ie, communication time and info of microservices). To do this we have to include the trace headers in yaml file.
+
+8. Istio simply reduces the work of a developer.
+
+9. We can also do in-production testing using istio (ie, to separatly test a new version of production alongside the current version without any traffic hitting) ie, canary routing, the super-secret traffic like we mentioned in yaml goes to canary service. we can route to 900th service in 2000 services using istio by propagating the headers.
+
+10. Others:
+
+Request routing
+Fault injection
+Traffic shifting
+Querying metrics
+Visualizing metrics
+Accessing external services
+Visualizing your mesh
+
+Focussed canary testing:
+As mentioned above, the Istio routing rules can be used to route traffic based on specific criteria, allowing more sophisticated canary deployment scenarios. Say, for example, instead of exposing the canary to an arbitrary percentage of users, we want to try it out on internal users, maybe even just a percentage of them. The following command could be used to send 50% of traffic from users at some-company-name.com to the canary version, leaving all other users unaffected.
+
+
+---
+ apiVersion: security.istio.io/v1beta1
+ kind: AuthorizationPolicy
+ metadata:
+   name: ingress-policy
+   namespace: istio-system
+ spec:
+   selector:
+     matchLabels:
+       app: istio-ingressgateway
+   action: DENY
+   rules:
+   - when:
+      - key: request.headers[User-Agent]
+        values: ["curl/*"]
+
+------------------
+-- peer authentication
+-- Request Authentication
+----
+ --RBAC
+Authorization Policy:
+1. Enforce access control on service to service communication channels
+2. Allows both ALLOW and DENY policies for easier onboarding
+3. The authorization can be applied in gateway level to endpoint level. ie, we can choose to allow only GET or PUT requests from an user 
+
+
+
+
+
+
+
+sudo apt install apt-transport-https ca-certificates curl software-properties-common 
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add - 
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable" 
+sudo apt update 
+sudo apt install docker-ce 
+sudo usermod -aG docker ${USER} 
+su - ${USER} 
+
+
+kubectl patch deployment myapp-deployment -p \
+  '{"apiVersion": "v1"}'
+
+
+  Istio applies the narrowest matching policy for each workload using the following order:
+
+    workload-specific
+    namespace-wide
+    mesh-wide
+
+
+
+
+Workload-to-workload and end-user-to-workload authorization.
+
+The authorization policy enforces access control to the inbound traffic in the server side Envoy proxy. Each Envoy proxy runs an authorization engine that authorizes requests at runtime. When a request comes to the proxy, the authorization engine evaluates the request context against the current authorization policies, and returns the authorization result, either ALLOW or DENY. Operators specify Istio authorization policies using .yaml files.
+
+An authorization policy includes a selector, an action, and a list of rules:
+
+    The selector field specifies the target of the policy
+    The action field specifies whether to allow or deny the request
+    The rules specify when to trigger the action
+        The from field in the rules specifies the sources of the request
+        The to field in the rules specifies the operations of the request
+        The when field specifies the conditions needed to apply the rule
+
+when different teams or projects share a Kubernetes cluster , we can deny requests from other sub clusters or other namespaces. 
+
+Value matching:
+   Exact match, Prefix match, Suffix match
+
+
+   resources:
+      requests:
+        memory: "74Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+
+
+1. Set higher limits for pods such that the memory limit summation of all apps exceeds the system memory limit and after that the replicas we add must go to other node.
+2. Applying more pressure to node and try to get them evicted.
+3. Using pod disruption budget and checking pod availabilty for those 300 seconds.
+
+
+
+{
+
+ "insecure-registries" : ["localhost:5000"]
+
+}
+
+
+
+{
+    "runtimes": {
+        "nvidia": {
+            "path": "/usr/bin/nvidia-container-runtime",
+            "runtimeArgs": []
+        }
+    }
+}
+
+
+
+bmctl create config -c cluster-demo --enable-apis --create-service-accounts --project-id=$PROJECT_ID
+
+bmctl create config -c standalone2 --enable-apis --create-service-accounts --project-id=peaceful-rex-346206 
+
+
+ bmctl create config -c bm-cluster-demo \
+
+  –enable-apis –create-service-accounts –project-id=<project-id>
+
+
+  gcloud services enable --project peaceful-rex-346206 \
+    anthos.googleapis.com \
+    anthosaudit.googleapis.com \
+    anthosgke.googleapis.com \
+    cloudresourcemanager.googleapis.com \
+    gkeconnect.googleapis.com \
+    gkehub.googleapis.com \
+    serviceusage.googleapis.com \
+    stackdriver.googleapis.com \
+    monitoring.googleapis.com \
+    logging.googleapis.com \
+    storage.googleapis.com \
+    opsconfigmonitoring.googleapis.com \
+    container.googleapis.com \
+    servicemanagement.googleapis.com \
+    servicecontrol.googleapis.com
+
+
+  gcloud projects add-iam-policy-binding peaceful-rex-346206  --member='serviceAccount:test-proj1@example.domain.com' --role='roles/editor'
+
+gcloud projects add-iam-policy-binding peaceful-rex-346206 --member='natrajan.v.vittal@gmail.com' --role='roles/editor'
+
+
+gcloud iam list-grantable-roles //cloudresourcemanager.googleapis.com/projects/peaceful-rex-346206

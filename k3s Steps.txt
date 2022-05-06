@@ -1,0 +1,159 @@
+docker run -d -p 5000:5000 --restart=always --name registry registry:2
+
+sudo cat /var/lib/rancher/k3s/server/node-token
+
+**curl -sfL https://get.k3s.io | K3S_URL=https://IP-ADDR-HOST:6443 K3S_TOKEN=TOKEN-OF-HOST sh -s - --docker
+
+Ex: curl -sfL https://get.k3s.io | K3S_URL=https://192.168.0.103:6443 K3S_TOKEN=K101cd243536e6eba97d6c13ce7e7eb709b2199e774653a7bbb83928dcf81b68d99::server:3edaec33b787d7998ea628a889229a75 sh -s - --docker
+
+for version 1.20:
+curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.20.15+k3s1 sh -s - --docker --write-kubeconfig-mode 644
+
+curl -sfL https://get.k3s.io | K3S_URL=https://192.168.0.123:6443 K3S_TOKEN=K10765b121a7b281c9760a43575c466492ba5291a4a6afb77e2c5e4ba0b3d217bf2::server:0094f1ef315c96458101d4416a870937 sh -s - --docker 
+
+k3s Steps
+
+curl -sfL https://get.k3s.io | sh -s - --docker --write-kubeconfig-mode 644
+
+On a new terminal run, “sudo k3s server” (if facing localhost:8080 error)
+
+   Go to /stc/docker - create daemon.json
+
+    {
+
+          "insecure-registries" : ["localhost:5000"]
+
+    }
+   Go to /etc/rancher
+   Create registry.yaml and
+5. kubectl apply -f registry.yaml
+
+6. kubectl apply -f service.yaml
+
+7. Create /etc/rancher/k3s/registries.yaml file on each k3s node
+
+8. Create /etc/docker/daemon.json file
+
+9. sudo systemctl restart docker
+
+a. To push a custom docker image to the registry follow the below steps- (Change IP Addresses if required in pod.yaml, registries.yaml and daemon.json for it to work if DHCP gives new IPs)
+
+docker tag custom-docker-image IP-ADDR-HOST:5000/custom-name:latest
+
+b. docker push IP-ADDR-HOST:5000/custom-name:latest
+
+10. kubectl apply –f deployment.yaml OR kubectl apply -f pod.yaml
+
+-----------------------------------
+kubectl get svc -n kube-system
+
+==========================================
+UNINSTALL K3s
+
+sh /usr/local/bin/k3s-killall.sh
+
+sh /usr/local/bin/k3s-uninstall.sh
+
+==========================================
+
+sudo systemctl status docker
+sudo systemctl restart docker
+docker run --name kubia-container -p 8080:8080 -d kubia
+docker run -it --rm --name kubia-container -p 8080:8080 -d kubia
+  ---port 8080 on host machiene is mapped to port 8080 inside the container and -d means it runs in background
+
+  sudo curl localhost:8080 (to listen to http)
+
+  sudo docker inspect kubia-continer - It gives an entire overview about hostport, network settings and other info of container.
+
+  docker exec -it kubia-container bash (to explore running container)
+
+  ps aux(for all processes)
+
+  to push image to dockerhub - 
+  step 1, docker tag kubia <dockerhub username>/kubia
+  step 2, Login to docker hub - docker login -u <username> -p <password>
+  step 3, docker push <dockerhub username>/kubia
+
+  If a container is running on one port, we cant run another on same port
+
+  **sudo alias k=kubectl (or simply add aliases to bashrc and source that).
+
+  ---To create deployment directly -> kubectl create deployment --image kubia:latest kubia
+
+  ---Create replicas ->  kubectl scale deployment kubia --replicas 3
+  
+  ---To expose the port -> kubectl expose deployment kubia --type=NodePort --port 8080
+
+  ---Additional -> kubectl get pods
+                   kubectl get services
+
+docker rm $(docker ps -a -q) (or) docker rmi -f $(docker images -a -q)
+
+**to stop specific port con -> sudo netstat -lnp | grep 10250
+and kill the process with id
+==================================================================
+**********(To get rid od localhost:8080 error)
+
+sudo kubectl config view --raw > ~/.kube/config 
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+export PATH=$PATH:$HOME/.istioctl/bin
+
+
+=============================================================
+The connection to the server 127.0.0.1:6443 was refused - did you specify the right host or port? ERROR
+sudo -i
+swapoff -a
+exit
+strace -eopenat kubectl version
+
+==============================================================
+*********TO permanently delete pods, first delete the deployments..
+
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+  labels:
+    env: test
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    imagePullPolicy: IfNotPresent
+  nodeSelector:
+    disktype: ssd
+
+
+
+kubectl label nodes <your-node-name> disktype=ssd
+kubectl get nodes --show-labels
+
+docker save nginx:alpine > nginx-amd.tar
+docker load -i nginx-amd.tar
+
+docker save od-ms-amd | gzip > od-ms-amd.tar.gz
+docker load < busybox.tar.gz
+
+host_ip=os.environ["HOST_IP"]
+host_endpoint='http://'+host_ip+':5020/HVACWRITE
+
+export DOCKER_CLI_EXPERIMENTAL=enabled
+docker manifest create --insecure localhost:5000/hvac-manifest:v1 localhost:5000/hvac-ms-arm:latest localhost:5000/hvac-ms-amd:latest 
+docker manifest push --insecure localhost:5000/hvac-manifest:v1
+
+
+Install kubectl:
+
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+curl -LO "https://dl.k8s.io/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
+echo "$(<kubectl.sha256)  kubectl" | sha256sum --check
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+kubectl version --client
+
+
+
+
+ OD_ENDPOINT = 'http://' + HOST_IP + ':5101/objectDetection/camFeed'
