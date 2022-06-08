@@ -1,0 +1,5 @@
+https://www.youtube.com/watch?v=DAe2Md9sGNA
+
+sudo usermod -a -G docker jenkins #and reboot
+
+

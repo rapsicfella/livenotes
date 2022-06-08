@@ -1,0 +1,73 @@
+podman
+----------------------------------------------------
+Error: Could not create the sandbox resource controller cgroups: cgroup mountpoint does not exist: not found
+Temp fix:
+sudo mkdir /sys/fs/cgroup/systemd
+sudo mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd
+
+----------------------------------------------
+To enable cgroupfsv2
+
+sudo sed -i -e 's/^GRUB_CMDLINE_LINUX=""/GRUB_CMDLINE_LINUX="systemd.unified_cgroup_hierarchy=1"/' /etc/default/grub
+sudo update-grub
+-------------------------------------
+INSTALL PODMAN:
+
+echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list 
+
+curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/Release.key | sudo apt-key add -
+
+sudo apt-get -y upgrade
+apt-get -y install podman
+podman --version
+podman pull ubuntu
+podman images
+------------------------------------------------
+
+
+Kiali - The Console for Istio Service Mesh
+Features:
+    Topology- See your service traffic graphs and how they communicate. 
+    Health- Quickly identify issues. 
+    Details- Examine details, logs and metrics. 
+    Tracing- Follow requests with Jaeger Distributed Tracing. 
+    Validations- Detect advanced misconfigurations. 
+    Wizards- Easily configure Istio routing.
+    Configuration management.
+
+Grafana - The Complete Graphical analysis
+Features:
+	Multiple plugins are supported
+	Fast and flexible visualizations that allows you to visualize your data.
+	Alerts- you can create, manage, and silence all of your alerts
+    Annotations- Annotate graphs with rich events from different data sources.
+    Transformations- allow you to rename, summarize, combine, and perform calculations across different queries and data sources.
+    Panel editor- makes it easy to configure, customize and explore all of your panels with a consistent UI 
+
+Jaeger - Time Series moitoring
+Fetures:
+    Logs and data collection with different formats
+	Distributed transaction monitoring
+	Performance and latency optimization
+	Root cause analysis
+	Service dependency analysis
+
+
+Kubesphere
+Features:
+	Kubernetes Resource Management
+	Cluster Upgrade and Scaling
+	Multi-cluster Management and Deployment
+	DevOps Support
+	Automation with CI/CD Pipeline
+	Out-of-box Visualization
+	Quality management and Logs
+	Istio-based Service Mesh
+	Traffic Management
+	Distributed Tracing
+	Observability
+	Multi-dimensional Monitoring
+	Alerting, Events, Auditing and Notifications
+	Log Query and Collection
+	Application Management and Orchestration
+	Multiple storage and network solutions.
